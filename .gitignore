@@ -24,3 +24,6 @@ Thumbs.db
 desktop.ini
 .DS_Store
 src/pipeline.py.bak
+
+# File so sanh config sinh ra khi cap nhat - rieng tung may
+*.yaml.moi
