@@ -216,3 +216,11 @@ taskkill /F /PID <pid>
 ## License
 
 Personal/Educational use only. Tuân thủ Douyin Terms of Service khi sử dụng.
+
+## Liên hệ
+
+**Võ Hùng Anh** — 0353477256
+
+Gặp lỗi hoặc cần hỗ trợ, cứ gọi trực tiếp.
+
+[Hướng dẫn cài đặt có hình ảnh](https://claude.ai/code/artifact/c1527a72-d4ea-4c45-b8a4-9643c88c8bba)
