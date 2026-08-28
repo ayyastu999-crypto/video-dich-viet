@@ -22,6 +22,7 @@ from src.config import load_dotenv                    # noqa: E402
 from webui.job_runner import JOBS, start_job          # noqa: E402
 from webui import settings as cfg_settings            # noqa: E402
 from webui import history as history_store           # noqa: E402
+from webui import updater                            # noqa: E402
 
 # Nap .env ngay khi khoi dong: /api/settings doc key qua os.environ,
 # khong nap truoc thi may da cau hinh roi van bao "chua co key".
@@ -87,6 +88,21 @@ def set_setting(req: KeyRequest):
     return {"ok": True, "keys": cfg_settings.read_all(ROOT), "engines": _engine_status()}
 
 
+@app.get("/api/update/check")
+def update_check():
+    """So phien ban dang chay voi ban moi nhat tren GitHub."""
+    return updater.check(ROOT)
+
+
+@app.post("/api/update/apply")
+def update_apply():
+    """Tai ban moi ve va thay code. Giu nguyen .env, output/, workspace/, config."""
+    try:
+        return updater.apply(ROOT)
+    except Exception as e:
+        raise HTTPException(500, f"Cap nhat that bai: {e}")
+
+
 @app.get("/api/history")
 def get_history():
     """Danh sach video da xu ly xong, doc tu thu muc output/."""
@@ -95,7 +111,8 @@ def get_history():
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "engines": _engine_status()}
+    return {"ok": True, "engines": _engine_status(),
+            "version": updater.local_version(ROOT).get("version")}
 
 
 @app.post("/api/upload")

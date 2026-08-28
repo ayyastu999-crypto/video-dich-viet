@@ -276,3 +276,68 @@ $('#btn-gear').onclick = () => $('#settings').classList.toggle('show');
 $('#btn-gear-close').onclick = () => $('#settings').classList.remove('show');
 
 loadSettings(true);   // lan dau chua co key thi tu mo bang cai dat
+
+// ---- Kiem tra va cai ban cap nhat ----
+
+function paintUpdate(d){
+  const box = $('#upd'), title = $('#upd-title'), sub = $('#upd-sub');
+  const cur = (d.current || {}).version || 'không rõ';
+
+  if (!d.ok) {
+    box.classList.remove('new');
+    title.textContent = 'Phiên bản ' + cur;
+    sub.textContent = d.error || 'Không kiểm tra được bản mới';
+    return;
+  }
+  if (d.has_update) {
+    const lat = d.latest || {};
+    box.classList.add('new');
+    title.textContent = 'Có bản mới: ' + lat.version;
+    sub.textContent = (lat.notes || '') + (lat.date ? '  ·  ' + lat.date : '');
+  } else {
+    box.classList.remove('new');
+    title.textContent = 'Đang dùng bản mới nhất';
+    sub.textContent = 'Phiên bản ' + cur;
+  }
+}
+
+async function checkUpdate(){
+  try {
+    paintUpdate(await (await fetch('/api/update/check')).json());
+  } catch (e) {
+    paintUpdate({ ok: false, error: e.message, current: {} });
+  }
+}
+
+$('#btn-upd').onclick = async () => {
+  const btn = $('#btn-upd');
+  const ok = confirm(
+    'Cập nhật app lên bản mới?\n\n' +
+    'Được giữ nguyên: API key, thư mục output, cấu hình của bạn.\n' +
+    'Bản cũ được sao lưu vào thư mục backup/ trước khi thay.\n\n' +
+    'Xong phải tắt và mở lại app.');
+  if (!ok) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Đang tải...';
+  try {
+    const r = await fetch('/api/update/apply', { method: 'POST' });
+    if (!r.ok) throw new Error((await r.text()).slice(0, 200));
+    const d = await r.json();
+    $('#upd').classList.remove('new');
+    $('#upd-title').textContent = 'Đã cập nhật lên ' + d.version;
+    $('#upd-sub').textContent =
+      'Hãy TẮT VÀ MỞ LẠI app để dùng bản mới.' +
+      (d.config_note ? '  ' + d.config_note : '');
+    btn.textContent = 'Xong — mở lại app';
+    alert('Cập nhật xong!\n\nĐã thay: ' + (d.replaced || []).join(', ') +
+          '\nSao lưu tại: ' + d.backup +
+          '\n\nHãy đóng cửa sổ đen rồi bấm lại "Dich Video Viet.bat".');
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Thử lại';
+    $('#upd-sub').textContent = 'Lỗi: ' + e.message;
+  }
+};
+
+checkUpdate();
