@@ -1,0 +1,22 @@
+edge-tts:
+  vi:
+    female: "vi-VN-HoaiMyNeural"
+    male: "vi-VN-NamMinhNeural"
+  en:
+    female: "en-US-JennyNeural"
+    male: "en-US-GuyNeural"
+  ja:
+    female: "ja-JP-NanamiNeural"
+    male: "ja-JP-KeitaNeural"
+  ko:
+    female: "ko-KR-SunHiNeural"
+    male: "ko-KR-InJoonNeural"
+  th:
+    female: "th-TH-PremwadeeNeural"
+    male: "th-TH-NiwatNeural"
+  id:
+    female: "id-ID-GadisNeural"
+    male: "id-ID-ArdiNeural"
+  zh:
+    female: "zh-CN-XiaoxiaoNeural"
+    male: "zh-CN-YunxiNeural"

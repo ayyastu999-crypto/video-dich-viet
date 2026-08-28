@@ -1,0 +1,26 @@
+# Bi mat - TUYET DOI khong commit
+.env
+cookies.txt
+cookies_*.txt
+*creds*.json
+*.key
+*.pem
+
+# Moi truong ao (nguoi dung tu tao bang Cai Dat.bat)
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Model AI (tu tai ve lan chay dau)
+models/
+
+# Du lieu chay - moi may mot khac
+workspace/
+output/
+
+# He dieu hanh
+Thumbs.db
+desktop.ini
+.DS_Store
+src/pipeline.py.bak

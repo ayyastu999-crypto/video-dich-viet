@@ -1,0 +1,82 @@
+================================================================
+  VIDEO DICH VIET
+  Dich video tieng nuoc ngoai sang tieng Viet:
+  nghe loi thoai -> dich -> long tieng -> chay phu de vao video
+================================================================
+
+
+CAN CHUAN BI TRUOC
+------------------
+
+1) Python 3.11 tro len
+   Tai tai: https://www.python.org/downloads/
+   QUAN TRONG: khi cai nho tick o "Add Python to PATH"
+
+2) FFmpeg
+   Mo PowerShell go:  winget install Gyan.FFmpeg
+   Cai xong phai MO LAI cua so dong lenh thi may moi nhan.
+
+3) (Khong bat buoc) Card do hoa NVIDIA
+   Co GPU thi may nghe loi thoai nhanh hon nhieu lan, va dung duoc
+   hai tinh nang: tach nhac nen, xoa phu de cu chay san tren video.
+
+
+CAI DAT
+-------
+
+Buoc 1. Giai nen thu muc nay ra o dia bat ky.
+        Nen dat o duong dan KHONG DAU tieng Viet, vi du:  D:\video-dich-viet
+
+Buoc 2. Bam dup file:   Cai Dat.bat
+        Cho khoang 5-15 phut. Neu may co GPU, no se hoi co cai
+        phan GPU khong - go "c" roi Enter (tai them khoang 3GB).
+
+Buoc 3. Bam dup file:   Dich Video Viet.bat
+        Trinh duyet tu mo. Neu khong, vao: http://localhost:5177
+
+
+LAN DAU DUNG: NHAP API KEY
+--------------------------
+
+App can 1 key de dich phu de. Phan nghe loi thoai chay tren may
+nen khong ton tien.
+
+Bam bieu tuong banh rang (goc tren ben phai) roi dan key vao.
+
+  Gemini   - mien phi, lay tai https://aistudio.google.com/apikey
+             Ban mien phi gioi han 20 luot goi moi ngay (~4 video).
+
+  DeepSeek - tra phi nhung rat re (khoang 35 dong / video),
+             khong gioi han luot. Lay tai https://platform.deepseek.com
+
+Chi can MOT trong hai la chay duoc. Key luu tren may ban, khong gui di dau.
+
+
+DUNG THE NAO
+------------
+
+Keo tha video vao khung, hoac dan duong dan file. Bam BAT DAU XU LY.
+Xong se co:
+
+  - Video da chay phu de tieng Viet va long tieng
+  - File phu de .srt roi
+  - Hai file kich ban .txt (van xuoi + song ngu) de copy di viet lai noi dung
+
+Xem duoc video ket qua ngay tren trang, khong can tai ve.
+
+
+MEO
+---
+
+- Video nguon co san phu de tieng Trung chay tren hinh?
+  Mo file config/default.yaml, doi  blur_old_captions: false  thanh  true
+  De phu de tieng Viet khong de chong len phu de cu.
+  (Can da cai phan GPU o buoc 2)
+
+- Chi muon phu de, khong can long tieng?
+  Trong o "Giong doc tieng Viet" chon "Khong tao giong".
+  Chay nhanh hon nhieu.
+
+- Video ra file nang qua?
+  Mo config/default.yaml, tang so  crf  len (24 -> 26 hoac 28).
+  So cang lon file cang nhe.

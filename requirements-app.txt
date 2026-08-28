@@ -1,0 +1,22 @@
+# Bo loi cho app web dich video (khong can GPU).
+# Phan GPU (torch/demucs/easyocr) do "Cai Dat.bat" cai rieng, PHAI cai sau cung
+# vi demucs/easyocr keo torch ban CPU ve va ghi de len ban CUDA.
+
+# Nhan dang giong noi - dung CTranslate2, khong phu thuoc torch
+faster-whisper>=1.1.0
+
+# Dich
+google-genai>=1.0.0
+openai>=1.60.0          # dung cho DeepSeek (chung giao thuc OpenAI)
+
+# Long tieng
+edge-tts>=6.1.0
+
+# Phu de + cau hinh
+pysrt>=1.1.2
+pyyaml>=6.0
+
+# Web UI
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-multipart>=0.0.9

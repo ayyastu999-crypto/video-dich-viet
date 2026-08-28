@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video Dịch Việt — Transcribe · Dịch · Lồng tiếng</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Phudu:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#030304; --surface:#0f1115; --surface-2:#14171d;
+  --fg:#fff; --muted:#94a3b8; --border:#1e293b;
+  --primary:#f7931a; --accent:#ea580c; --gold:#ffd600;
+  --danger:#ef4444; --ok:#22c55e;
+  --radius:1rem;
+  --fire:linear-gradient(to right,#ea580c,#f7931a);
+  --goldgrad:linear-gradient(to right,#f7931a,#ffd600);
+  --glow-sm:0 0 20px -5px #ea580c80;
+  --glow-md:0 0 30px -5px #f7931a99;
+  --glow-card:0 0 30px -10px #f7931a33;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --display:"Phudu","Space Grotesk",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);
+  -webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(700px 380px at 50% -8%,#f7931a1f,transparent 70%)}
+.wrap{position:relative;z-index:1;max-width:940px;margin:0 auto;padding:0 20px 80px}
+.mono{font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;font-size:11px}
+
+/* ---------- header ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;
+  padding:18px 0;border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);
+  font-weight:700;letter-spacing:-.02em;font-size:15px}
+.logo{width:26px;height:26px;border-radius:8px;background:var(--fire);
+  display:grid;place-items:center;font-size:13px;box-shadow:var(--glow-sm)}
+.status{display:flex;align-items:center;gap:14px}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;
+  border:1px solid var(--border);border-radius:999px;background:var(--surface)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--ok);
+  box-shadow:0 0 8px var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.35}}
+.clock{color:var(--muted)}
+
+/* ---------- hero ---------- */
+.hero{padding:52px 0 30px;text-align:center}
+.eyebrow{color:var(--primary);margin-bottom:16px}
+h1{font-family:var(--display);font-weight:800;letter-spacing:-.012em;
+  font-size:clamp(34px,6vw,58px);line-height:1.05;margin-bottom:14px}
+h1 em{font-style:normal;background:var(--goldgrad);-webkit-background-clip:text;
+  background-clip:text;color:transparent}
+.lede{color:var(--muted);max-width:530px;margin:0 auto;font-size:15px}
+
+/* ---------- card ---------- */
+.card{background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px}
+.card + .card{margin-top:16px}
+.card-head{display:flex;align-items:center;justify-content:space-between;
+  gap:12px;margin-bottom:16px}
+.card-title{font-family:var(--display);font-weight:500;font-size:15px;
+  display:flex;align-items:center;gap:9px}
+.step-no{width:21px;height:21px;border-radius:6px;background:var(--surface-2);
+  border:1px solid var(--border);color:var(--primary);display:grid;
+  place-items:center;font-family:var(--mono);font-size:10px;font-weight:700}
+
+/* ---------- cai dat API key ---------- */
+.gear{background:var(--surface);border:1px solid var(--border);color:var(--muted);
+  border-radius:999px;width:31px;height:31px;cursor:pointer;font-size:14px;
+  transition:.15s;display:grid;place-items:center}
+.gear:hover{border-color:var(--primary);color:var(--primary)}
+#settings{display:none}
+#settings.show{display:block}
+.keyrow{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap}
+.keyrow:last-of-type{margin-bottom:0}
+.keyrow label{flex:none;width:132px;color:var(--muted)}
+.keyrow input{flex:1;min-width:190px;font-family:var(--mono);font-size:12px;
+  letter-spacing:.04em;text-transform:none}
+.keyrow .st{flex:none;font-family:var(--mono);font-size:9px;letter-spacing:.1em;
+  padding:3px 7px;border-radius:5px;border:1px solid var(--border);color:#64748b}
+.keyrow .st.ok{color:var(--ok);border-color:#22c55e40}
+.keyhint{color:#64748b;font-size:11px;margin-top:12px;line-height:1.6}
+.keyhint a{color:var(--primary);text-decoration:none}
+.keyhint a:hover{text-decoration:underline}
+.warn-box{display:none;align-items:flex-start;gap:10px;padding:12px 14px;
+  background:#1a1206;border:1px solid #f7931a55;border-radius:11px;
+  margin-bottom:15px;font-size:12.5px;line-height:1.55}
+.warn-box.show{display:flex}
+
+/* ---------- dropzone ---------- */
+.drop{border:1.5px dashed #2b3a52;border-radius:14px;padding:38px 22px;
+  text-align:center;cursor:pointer;transition:.18s;background:#0a0c10}
+.drop:hover,.drop.over{border-color:var(--primary);background:#12100c;
+  box-shadow:var(--glow-card)}
+.drop-ico{font-size:30px;margin-bottom:12px;opacity:.85}
+.drop h3{font-family:var(--display);font-weight:500;font-size:16px;margin-bottom:6px}
+.drop p{color:var(--muted);font-size:13px}
+.or{display:flex;align-items:center;gap:12px;margin:14px 0;color:var(--muted)}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--border)}
+.path-row{display:flex;gap:9px}
+input[type=text],select{background:#0a0c10;border:1px solid var(--border);
+  color:var(--fg);border-radius:10px;padding:10px 12px;font-family:var(--body);
+  font-size:13px;width:100%;outline:none;transition:.15s}
+input[type=text]:focus,select:focus{border-color:var(--primary);
+  box-shadow:0 0 0 3px #f7931a26}
+select{cursor:pointer;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,#94a3b8 50%),linear-gradient(135deg,#94a3b8 50%,transparent 50%);
+  background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}
+.btn-ghost{background:var(--surface-2);border:1px solid var(--border);color:var(--fg);
+  border-radius:10px;padding:10px 15px;font-size:13px;cursor:pointer;
+  white-space:nowrap;font-family:var(--body);transition:.15s}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+/* file da chon */
+.file-info{display:none;align-items:center;gap:14px;padding:15px;
+  background:#0a0c10;border:1px solid var(--border);border-radius:12px}
+.file-info.show{display:flex}
+.file-thumb{width:74px;height:42px;border-radius:7px;background:var(--fire);
+  display:grid;place-items:center;font-size:17px;flex:none}
+.file-meta{flex:1;min-width:0}
+.file-name{font-size:13px;font-weight:500;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;margin-bottom:3px}
+.file-sub{color:var(--muted)}
+
+/* ---------- luoi tuy chon ---------- */
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+@media(max-width:640px){.grid{grid-template-columns:1fr}}
+.field label{display:block;color:var(--muted);margin-bottom:7px}
+.hint{color:#64748b;font-size:11px;margin-top:6px;font-family:var(--mono);
+  text-transform:none;letter-spacing:0}
+
+/* chip chon engine */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{flex:1;min-width:132px;background:#0a0c10;border:1px solid var(--border);
+  border-radius:11px;padding:11px 13px;cursor:pointer;transition:.15s;position:relative}
+.chip:hover{border-color:#3b4a63}
+.chip.on{border-color:var(--primary);background:#12100c;box-shadow:var(--glow-card)}
+.chip-name{font-size:13px;font-weight:500;margin-bottom:4px;display:flex;
+  align-items:center;gap:6px}
+.chip.on .chip-name{color:var(--primary)}
+.chip-desc{color:var(--muted);font-size:11px;line-height:1.4}
+.tag{font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:2px 6px;
+  border-radius:5px;border:1px solid var(--border);color:var(--muted)}
+.tag.free{color:var(--ok);border-color:#22c55e40}
+.tag.gpu{color:var(--gold);border-color:#ffd60040}
+.tag.off{color:#64748b}
+
+/* checkbox output */
+.checks{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+@media(max-width:640px){.checks{grid-template-columns:1fr}}
+.check{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#0a0c10;
+  border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:.15s;
+  font-size:13px}
+.check:hover{border-color:#3b4a63}
+.check.on{border-color:var(--primary);background:#12100c}
+.box{width:16px;height:16px;border-radius:5px;border:1.5px solid #3b4a63;flex:none;
+  display:grid;place-items:center;font-size:10px;color:var(--bg);transition:.15s}
+.check.on .box{background:var(--primary);border-color:var(--primary)}
+.check-txt{flex:1}
+.check-txt b{display:block;font-weight:500}
+.check-txt span{color:var(--muted);font-size:11px}
+
+/* ---------- uoc tinh chi phi ---------- */
+.cost{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  padding:13px 16px;background:#0a0c10;border:1px solid var(--border);
+  border-radius:12px;margin-top:16px;flex-wrap:wrap}
+.cost-left{display:flex;align-items:center;gap:9px;color:var(--muted);font-size:12px}
+.cost-val{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--gold)}
+.cost-note{color:#64748b;font-size:11px}
+
+/* ---------- nut chinh ---------- */
+.cta{width:100%;margin-top:18px;padding:15px;border:none;border-radius:13px;
+  background:var(--fire);color:#030304;font-family:var(--display);font-weight:700;
+  font-size:15px;letter-spacing:-.01em;cursor:pointer;transition:.18s;
+  box-shadow:var(--glow-md);display:flex;align-items:center;justify-content:center;gap:9px}
+.cta:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.07)}
+.cta:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;filter:grayscale(.5)}
+
+/* ---------- tien trinh ---------- */
+#panel-run,#panel-done{display:none}
+#panel-run.show,#panel-done.show{display:block}
+.bar{height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden;
+  margin:4px 0 18px}
+.bar i{display:block;height:100%;width:0;background:var(--fire);border-radius:99px;
+  transition:width .45s ease;box-shadow:0 0 12px #f7931a99}
+.steps{display:flex;flex-direction:column;gap:2px;margin-bottom:16px}
+.step{display:flex;align-items:center;gap:11px;padding:9px 11px;border-radius:9px;
+  font-size:13px;color:#64748b;transition:.2s}
+.step.active{background:#12100c;color:var(--fg)}
+.step.done{color:var(--muted)}
+.step-ico{width:19px;height:19px;border-radius:50%;border:1.5px solid #334155;
+  flex:none;display:grid;place-items:center;font-size:10px}
+.step.done .step-ico{background:var(--ok);border-color:var(--ok);color:#030304}
+.step.active .step-ico{border-color:var(--primary);color:var(--primary);
+  animation:spin 1.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.step-x{margin-left:auto;font-family:var(--mono);font-size:10px;color:#64748b;
+  letter-spacing:.08em}
+
+/* console log */
+.console{background:#08090c;border:1px solid var(--border);border-radius:11px;
+  padding:13px 15px;font-family:var(--mono);font-size:11px;line-height:1.85;
+  max-height:172px;overflow-y:auto;text-transform:none;letter-spacing:0}
+.console::-webkit-scrollbar{width:6px}
+.console::-webkit-scrollbar-thumb{background:#1e293b;border-radius:99px}
+.console div{color:#64748b}
+.console .t{color:#475569;margin-right:9px}
+.console .ok{color:var(--ok)}
+.console .warn{color:var(--gold)}
+.console .err{color:var(--danger)}
+
+/* ---------- xem video ngay tren trang ---------- */
+.player{display:none;margin-bottom:16px;border:1px solid var(--border);
+  border-radius:13px;overflow:hidden;background:#000;box-shadow:var(--glow-card)}
+.player.show{display:block}
+.player video{display:block;width:100%;max-height:62vh;background:#000;outline:none}
+.player-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:10px 14px;background:#0a0c10;border-top:1px solid var(--border);flex-wrap:wrap}
+.player-name{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap;flex:1;min-width:0}
+.player-acts{display:flex;gap:8px;flex:none}
+
+/* ---------- ket qua ---------- */
+.out-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+@media(max-width:640px){.out-grid{grid-template-columns:1fr}}
+.out{display:flex;align-items:center;gap:12px;padding:13px;background:#0a0c10;
+  border:1px solid var(--border);border-radius:12px;transition:.15s}
+.out:hover{border-color:var(--primary);box-shadow:var(--glow-card)}
+.out-ico{width:36px;height:36px;border-radius:9px;background:var(--surface-2);
+  display:grid;place-items:center;font-size:16px;flex:none}
+.out.star .out-ico{background:var(--fire)}
+.out-meta{flex:1;min-width:0}
+.out-name{font-size:12.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.out-size{color:var(--muted);font-family:var(--mono);font-size:10px;
+  letter-spacing:.06em;margin-top:2px}
+.out-btn{background:transparent;border:1px solid var(--border);color:var(--muted);
+  border-radius:8px;padding:6px 10px;font-size:11px;cursor:pointer;flex:none;
+  font-family:var(--body);transition:.15s}
+.out-btn:hover{border-color:var(--primary);color:var(--primary)}
+
+/* bang preview phu de */
+.subprev{margin-top:16px;border:1px solid var(--border);border-radius:12px;
+  overflow:hidden}
+.subprev-head{display:flex;align-items:center;justify-content:space-between;
+  padding:11px 14px;background:#0a0c10;border-bottom:1px solid var(--border)}
+.subprev-body{max-height:230px;overflow-y:auto}
+.subprev-body::-webkit-scrollbar{width:6px}
+.subprev-body::-webkit-scrollbar-thumb{background:#1e293b;border-radius:99px}
+.srow{display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;padding:9px 14px;
+  border-bottom:1px solid #14181f;font-size:12px}
+.srow:last-child{border-bottom:none}
+.srow .tc{font-family:var(--mono);font-size:10px;color:#475569;letter-spacing:.05em}
+.srow .src{color:var(--muted)}
+@media(max-width:640px){.srow{grid-template-columns:56px 1fr}.srow .src{display:none}}
+.foot{text-align:center;margin-top:44px;color:#475569;font-family:var(--mono);
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <div class="brand"><span class="logo">⚡</span> VIDEO DỊCH VIỆT</div>
+  <div class="status">
+    <span class="pill mono"><span class="dot"></span> SẴN SÀNG</span>
+    <span class="pill mono clock" id="clock">--:--</span>
+    <button class="gear" id="btn-gear" title="Cài đặt API key">⚙</button>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="eyebrow mono">✦ TRANSCRIBE · DỊCH · LỒNG TIẾNG · TỰ ĐỘNG</div>
+  <h1>Video tiếng nước ngoài,<br><em>ra tiếng Việt</em></h1>
+  <p class="lede">Thả video vào. Máy tự nghe, dịch, lồng giọng Việt và ghép phụ đề.
+    Xong trong vài phút — không cần thao tác gì thêm.</p>
+</div>
+
+<!-- CAI DAT API KEY -->
+<div class="card" id="settings">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no">⚙</span> Cài đặt API key</div>
+    <button class="out-btn" id="btn-gear-close">Đóng</button>
+  </div>
+
+  <div class="warn-box" id="key-warn">
+    <span>🔑</span>
+    <span>Chưa có key nào. App cần <b>một</b> key để dịch phụ đề.
+      Nhận dạng giọng nói chạy trên máy nên không tốn tiền.</span>
+  </div>
+
+  <div class="keyrow">
+    <label class="mono">GEMINI</label>
+    <input type="password" id="key-gemini" placeholder="AIza..." autocomplete="off">
+    <button class="btn-ghost" data-save="gemini">Lưu</button>
+    <span class="st" id="st-gemini">CHƯA CÓ</span>
+  </div>
+
+  <div class="keyrow">
+    <label class="mono">DEEPSEEK</label>
+    <input type="password" id="key-deepseek" placeholder="sk-... (không bắt buộc)" autocomplete="off">
+    <button class="btn-ghost" data-save="deepseek">Lưu</button>
+    <span class="st" id="st-deepseek">CHƯA CÓ</span>
+  </div>
+
+  <div class="keyhint">
+    Lấy key Gemini miễn phí tại <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>
+    — bản miễn phí cho <b>20 lượt gọi mỗi ngày</b>, đủ khoảng 4 video.<br>
+    DeepSeek (<a href="https://platform.deepseek.com" target="_blank">platform.deepseek.com</a>)
+    trả phí nhưng rất rẻ, khoảng 35đ một video, không giới hạn lượt.<br>
+    Key lưu trong file <code>.env</code> ngay trên máy này, không gửi đi đâu cả.
+  </div>
+</div>
+
+<!-- BUOC 1: NGUON -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no">1</span> Chọn video</div>
+    <span class="tag" id="src-tag">CHƯA CÓ FILE</span>
+  </div>
+
+  <div class="drop" id="drop">
+    <div class="drop-ico">🎬</div>
+    <h3>Kéo thả video vào đây</h3>
+    <p>MP4, MKV, MOV, AVI, WEBM · hoặc bấm để chọn từ máy</p>
+  </div>
+  <input type="file" id="file" accept="video/*" hidden>
+
+  <div class="or mono">HOẶC DÁN ĐƯỜNG DẪN</div>
+  <div class="path-row">
+    <input type="text" id="path" placeholder="C:\Users\PC\Desktop\video.mp4">
+    <button class="btn-ghost" id="btn-path">Nạp</button>
+  </div>
+
+  <div class="file-info" id="finfo" style="margin-top:14px">
+    <div class="file-thumb">🎞️</div>
+    <div class="file-meta">
+      <div class="file-name" id="fname">video.mp4</div>
+      <div class="file-sub mono" id="fsub">6:15 · 720P · 17.0 MB</div>
+    </div>
+    <button class="out-btn" id="btn-clear">Bỏ</button>
+  </div>
+</div>
+
+<!-- BUOC 2: TUY CHON -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no">2</span> Thiết lập</div>
+  </div>
+
+  <div class="grid">
+    <div class="field">
+      <label class="mono">NGÔN NGỮ GỐC</label>
+      <select id="src-lang">
+        <option value="auto">Tự động phát hiện</option>
+        <option value="zh">Tiếng Trung</option>
+        <option value="en">Tiếng Anh</option>
+        <option value="ja">Tiếng Nhật</option>
+        <option value="ko">Tiếng Hàn</option>
+        <option value="th">Tiếng Thái</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="mono">GIỌNG ĐỌC TIẾNG VIỆT</label>
+      <select id="voice">
+        <option value="vi-VN-HoaiMyNeural">Hoài My — nữ, miền Bắc</option>
+        <option value="vi-VN-NamMinhNeural">Nam Minh — nam, miền Bắc</option>
+        <option value="none">Không tạo giọng (chỉ phụ đề)</option>
+      </select>
+      <div class="hint">edge-tts · miễn phí · không giới hạn</div>
+    </div>
+  </div>
+
+  <div class="field" style="margin-top:16px">
+    <label class="mono">NHẬN DẠNG LỜI THOẠI</label>
+    <div class="chips" data-group="asr">
+      <div class="chip on" data-v="gemini">
+        <div class="chip-name">Gemini <span class="tag free">FREE TIER</span></div>
+        <div class="chip-desc">Chạy trên cloud. Không cần cài gì thêm.</div>
+      </div>
+      <div class="chip" data-v="whisper">
+        <div class="chip-name">Whisper local <span class="tag off">CHƯA CÀI</span></div>
+        <div class="chip-desc">Chạy trên RTX 4060 Ti. Miễn phí, timestamp chuẩn hơn.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field" style="margin-top:16px">
+    <label class="mono">DỊCH SANG TIẾNG VIỆT</label>
+    <div class="chips" data-group="mt">
+      <div class="chip on" data-v="gemini">
+        <div class="chip-name">Gemini <span class="tag free">FREE TIER</span></div>
+        <div class="chip-desc">Văn phong tự nhiên nhất.</div>
+      </div>
+      <div class="chip" data-v="deepseek">
+        <div class="chip-name">DeepSeek <span class="tag off">CHƯA CÓ KEY</span></div>
+        <div class="chip-desc">~35đ/video. Dùng khi chạy số lượng lớn.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUOC 3: XUAT FILE -->
+<div class="card">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no">3</span> File muốn xuất</div>
+  </div>
+  <div class="checks">
+    <div class="check on" data-out="mp4_both">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>MP4 — giọng Việt + phụ đề</b><span>Bản đầy đủ nhất</span></span>
+    </div>
+    <div class="check on" data-out="mp4_sub">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>MP4 — tiếng gốc + phụ đề</b><span>Giữ giọng gốc</span></span>
+    </div>
+    <div class="check" data-out="mp4_voice">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>MP4 — chỉ giọng Việt</b><span>Không cháy phụ đề</span></span>
+    </div>
+    <div class="check on" data-out="srt_vi">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>Phụ đề .SRT tiếng Việt</b><span>File rời</span></span>
+    </div>
+    <div class="check" data-out="srt_bi">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>Phụ đề song ngữ</b><span>Việt + tiếng gốc</span></span>
+    </div>
+    <div class="check" data-out="mp3">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>MP3 giọng đọc</b><span>Track voice riêng</span></span>
+    </div>
+    <div class="check on" data-out="script_vi">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>Kịch bản .TXT tiếng Việt</b><span>Văn xuôi liền mạch, copy đi viết lại content</span></span>
+    </div>
+    <div class="check" data-out="script_bi">
+      <span class="box">✓</span>
+      <span class="check-txt"><b>Kịch bản song ngữ .TXT</b><span>Đối chiếu từng câu, có mốc thời gian</span></span>
+    </div>
+  </div>
+
+  <div class="cost">
+    <div class="cost-left">
+      <span>💰</span>
+      <span>Ước tính chi phí API cho video này</span>
+    </div>
+    <div style="text-align:right">
+      <div class="cost-val" id="cost">~680 đ</div>
+      <div class="cost-note" id="cost-note">Gemini · 0đ nếu còn free tier</div>
+    </div>
+  </div>
+
+  <button class="cta" id="go" disabled>
+    <span>⚡</span> BẮT ĐẦU XỬ LÝ
+  </button>
+</div>
+
+<!-- DANG CHAY -->
+<div class="card" id="panel-run">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no">⟳</span> Đang xử lý</div>
+    <span class="tag mono" id="elapsed">00:00</span>
+  </div>
+  <div class="bar"><i id="barfill"></i></div>
+  <div class="steps" id="steps">
+    <div class="step" data-s="0"><span class="step-ico">○</span> Tách audio khỏi video<span class="step-x"></span></div>
+    <div class="step" data-s="1"><span class="step-ico">○</span> Nhận dạng lời thoại<span class="step-x"></span></div>
+    <div class="step" data-s="2"><span class="step-ico">○</span> Dịch sang tiếng Việt<span class="step-x"></span></div>
+    <div class="step" data-s="3"><span class="step-ico">○</span> Tạo giọng đọc<span class="step-x"></span></div>
+    <div class="step" data-s="4"><span class="step-ico">○</span> Ghép video &amp; phụ đề<span class="step-x"></span></div>
+  </div>
+  <div class="console" id="log"></div>
+</div>
+
+<!-- KET QUA -->
+<div class="card" id="panel-done">
+  <div class="card-head">
+    <div class="card-title"><span class="step-no" style="color:#22c55e">✓</span> Hoàn tất</div>
+    <button class="btn-ghost" id="btn-folder">📂 Mở thư mục</button>
+  </div>
+  <div class="player" id="player">
+    <video id="vid" controls preload="metadata" playsinline></video>
+    <div class="player-bar">
+      <span class="player-name" id="vid-name"></span>
+      <span class="player-acts">
+        <button class="out-btn" id="vid-full">⛶ Toàn màn hình</button>
+        <a class="out-btn" id="vid-dl" download>⬇ Tải về</a>
+      </span>
+    </div>
+  </div>
+
+  <div class="out-grid" id="outs"></div>
+
+  <div class="subprev">
+    <div class="subprev-head">
+      <span class="mono" style="color:#94a3b8">XEM TRƯỚC PHỤ ĐỀ</span>
+      <span class="mono" id="cue-count" style="color:#475569">118 CÂU</span>
+    </div>
+    <div class="subprev-body" id="subprev"></div>
+  </div>
+
+  <button class="cta" id="again" style="margin-top:16px;background:var(--surface-2);
+    color:var(--fg);box-shadow:none">↺ DỊCH VIDEO KHÁC</button>
+</div>
+
+<div class="foot">$ FFMPEG · GEMINI · EDGE-TTS · CHẠY LOCAL TRÊN MÁY BẠN</div>
+</div>
+<script>
+const BS = String.fromCharCode(92);   // dau backslash
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+
+// Bao nhieu giay video dang chon (dung de uoc tinh chi phi)
+let state = { seconds: 0, name: "", loaded: false, running: false, file: null, path: null };
+
+// ---- dong ho goc phai ----
+const tick = () => {
+  const d = new Date();
+  $("#clock").textContent = String(d.getHours()).padStart(2,"0") + ":" +
+                            String(d.getMinutes()).padStart(2,"0");
+};
+tick(); setInterval(tick, 10000);
+
+// ---- chon file ----
+const drop = $("#drop"), fileEl = $("#file");
+drop.onclick = () => fileEl.click();
+["dragenter","dragover"].forEach(e => drop.addEventListener(e, ev => {
+  ev.preventDefault(); drop.classList.add("over");
+}));
+["dragleave","drop"].forEach(e => drop.addEventListener(e, ev => {
+  ev.preventDefault(); drop.classList.remove("over");
+}));
+drop.addEventListener("drop", ev => { if (ev.dataTransfer.files[0]) loadFile(ev.dataTransfer.files[0]); });
+fileEl.onchange = () => { if (fileEl.files[0]) loadFile(fileEl.files[0]); };
+
+function fmtSize(b){ return b > 1048576 ? (b/1048576).toFixed(1)+" MB" : (b/1024).toFixed(0)+" KB"; }
+function fmtDur(s){ return Math.floor(s/60)+":"+String(Math.round(s%60)).padStart(2,"0"); }
+
+function loadFile(f){
+  // doc thoi luong that bang the video an
+  const v = document.createElement("video");
+  v.preload = "metadata";
+  v.onloadedmetadata = () => {
+    setFile(f.name, v.duration, fmtSize(f.size), v.videoHeight ? v.videoHeight+"P" : "");
+    state.file = f;              // se upload len server khi bam chay
+    URL.revokeObjectURL(v.src);
+  };
+  v.onerror = () => { setFile(f.name, 0, fmtSize(f.size), ""); state.file = f; };
+  v.src = URL.createObjectURL(f);
+}
+
+function setFile(name, seconds, size, res){
+  state = { seconds, name, loaded: true, running: false, file: null, path: null };
+  $("#fname").textContent = name;
+  $("#fsub").textContent = [seconds ? fmtDur(seconds) : null, res, size].filter(Boolean).join(" · ");
+  $("#finfo").classList.add("show");
+  $("#src-tag").textContent = "ĐÃ NẠP";
+  $("#src-tag").className = "tag free";
+  $("#go").disabled = false;
+  calcCost();
+}
+
+$("#btn-path").onclick = () => {
+  const p = $("#path").value.trim();
+  if (!p) return;
+  setFile(p.split("/").pop().split(BS).pop(), 0, "—", "");
+  state.path = p;                // duong dan co san tren may, khoi upload
+};
+$("#btn-clear").onclick = () => {
+  state = { seconds:0, name:"", loaded:false, running:false, file:null, path:null };
+  $("#finfo").classList.remove("show");
+  $("#src-tag").textContent = "CHƯA CÓ FILE";
+  $("#src-tag").className = "tag";
+  $("#go").disabled = true; fileEl.value = ""; $("#path").value = "";
+};
+
+// ---- chip chon engine (mot lua chon moi nhom) ----
+$$(".chips").forEach(g => g.querySelectorAll(".chip").forEach(c => {
+  c.onclick = () => {
+    if (c.querySelector(".tag.off")) return;   // engine chua san sang
+    g.querySelectorAll(".chip").forEach(x => x.classList.remove("on"));
+    c.classList.add("on"); calcCost();
+  };
+}));
+const pick = group => $(".chips[data-group=" + group + "] .chip.on").dataset.v;
+
+// ---- checkbox output ----
+$$(".check").forEach(c => c.onclick = () => c.classList.toggle("on"));
+const outputs = () => $$(".check.on").map(c => c.dataset.out);
+
+// ---- uoc tinh chi phi ----
+// Gemini 2.5 Flash: audio $1.00/M (25 tok/s), text in $0.30/M, out $2.50/M
+// DeepSeek V4-Flash: in $0.14/M, out $0.28/M | Whisper local + edge-tts: 0
+const USD_VND = 26000;
+function calcCost(){
+  const sec = state.seconds || 0;
+  if (!sec) { $("#cost").textContent = "—"; $("#cost-note").textContent = "Chọn video để ước tính"; return; }
+  const outTok = sec * 7.7;            // token transcript sinh ra, do tu video mau
+  const viTok  = sec * 8.8;            // token ban dich tieng Viet
+  let usd = 0;
+  const asr = pick("asr"), mt = pick("mt");
+  if (asr === "gemini") usd += (sec * 25 / 1e6) * 1.00 + (outTok / 1e6) * 2.50;
+  if (mt === "gemini")  usd += (outTok / 1e6) * 0.30 + (viTok / 1e6) * 2.50;
+  else                  usd += (outTok / 1e6) * 0.14 + (viTok / 1e6) * 0.28;
+  const vnd = Math.round(usd * USD_VND);
+  $("#cost").textContent = vnd < 1 ? "0 đ" : "~" + vnd.toLocaleString("vi-VN") + " đ";
+  const parts = [];
+  parts.push(asr === "gemini" ? "Gemini nghe" : "Whisper local (0đ)");
+  parts.push(mt === "gemini" ? "Gemini dịch" : "DeepSeek dịch");
+  $("#cost-note").textContent = parts.join(" · ") +
+    (asr === "gemini" || mt === "gemini" ? " · 0đ nếu còn free tier" : "");
+}
+
+// ---- chay tien trinh ----
+const STEP_LABEL = ["Tách audio","Nhận dạng lời thoại","Dịch sang tiếng Việt",
+                    "Tạo giọng đọc","Ghép video & phụ đề"];
+let t0 = 0, timer = null;
+
+function logLine(text, cls){
+  const d = new Date();
+  const el = document.createElement("div");
+  el.innerHTML = '<span class="t">' +
+    String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0") +
+    ":" + String(d.getSeconds()).padStart(2,"0") + '</span><span class="' +
+    (cls || "") + '"></span>';
+  el.lastChild.textContent = text;
+  $("#log").appendChild(el);
+  $("#log").scrollTop = $("#log").scrollHeight;
+}
+
+function setStep(i, status, extra){
+  const s = $('.step[data-s="' + i + '"]');
+  if (!s) return;
+  s.className = "step " + status;
+  s.querySelector(".step-ico").textContent = status === "done" ? "✓" : status === "active" ? "◐" : "○";
+  s.querySelector(".step-x").textContent = extra || "";
+  $("#barfill").style.width = ((i + (status === "done" ? 1 : 0.45)) / 5 * 100) + "%";
+}
+
+function startTimer(){
+  t0 = Date.now();
+  timer = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    $("#elapsed").textContent = String(Math.floor(s/60)).padStart(2,"0") + ":" +
+                                String(s%60).padStart(2,"0");
+  }, 1000);
+}
+
+$("#again").onclick = () => {
+  $("#panel-run").classList.remove("show");
+  $("#panel-done").classList.remove("show");
+  $$(".step").forEach((s, i) => setStep(i, ""));
+  $("#barfill").style.width = "0";
+  $("#btn-clear").click();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+calcCost();
+</script>
+<script src="_run.js"></script>
+</body>
+</html>
