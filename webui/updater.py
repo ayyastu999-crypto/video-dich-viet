@@ -15,6 +15,9 @@ from pathlib import Path
 REPO = "ayyastu999-crypto/video-dich-viet"
 BRANCH = "main"
 RAW = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/version.json"
+# raw.githubusercontent BO QUA tham so pha cache, co the tra ban cu hang phut.
+# Contents API tra ngay ban moi nhat -> dung lam nguon chinh.
+API = f"https://api.github.com/repos/{REPO}/contents/version.json?ref={BRANCH}"
 ZIP = f"https://github.com/{REPO}/archive/refs/heads/{BRANCH}.zip"
 
 # Chi nhung thu muc/file nay bi thay khi cap nhat
@@ -37,19 +40,33 @@ def local_version(root: Path) -> dict:
         return {"version": "khong ro", "date": ""}
 
 
+def _fetch_remote(timeout: int):
+    """Lay version.json tren GitHub. Uu tien Contents API vi luon moi;
+    raw chi dung du phong khi API bi gioi han luot (60 lan/gio)."""
+    import base64
+
+    try:
+        req = urllib.request.Request(
+            API, headers={"Accept": "application/vnd.github+json",
+                          "User-Agent": "video-dich-viet"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            payload = json.loads(r.read().decode("utf-8"))
+        raw = base64.b64decode(payload["content"]).decode("utf-8")
+        return json.loads(raw), None
+    except Exception as api_err:
+        try:
+            with urllib.request.urlopen(RAW, timeout=timeout) as r:
+                return json.loads(r.read().decode("utf-8")), None
+        except Exception as raw_err:
+            return None, f"{api_err} / {raw_err}"
+
+
 def check(root: Path, timeout: int = 12) -> dict:
     """So phien ban dang cai voi ban tren GitHub."""
     cur = local_version(root)
-    try:
-        # CDN cua raw.githubusercontent cache vai phut -> them tham so ngau nhien
-        # va header no-cache, khong thi vua day ban moi len van bao "da moi nhat".
-        url = RAW + "?t=" + datetime.now().strftime("%Y%m%d%H%M%S")
-        req = urllib.request.Request(url, headers={"Cache-Control": "no-cache",
-                                                   "Pragma": "no-cache"})
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            remote = json.loads(r.read().decode("utf-8"))
-    except Exception as e:
-        return {"ok": False, "error": f"Khong ket noi duoc GitHub: {e}",
+    remote, err = _fetch_remote(timeout)
+    if remote is None:
+        return {"ok": False, "error": f"Khong ket noi duoc GitHub: {err}",
                 "current": cur}
 
     has_update = str(remote.get("version")) != str(cur.get("version"))
