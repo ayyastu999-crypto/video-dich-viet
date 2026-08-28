@@ -21,6 +21,7 @@ os.chdir(ROOT)   # config/ va workspace/ deu tinh tu goc project
 from src.config import load_dotenv                    # noqa: E402
 from webui.job_runner import JOBS, start_job          # noqa: E402
 from webui import settings as cfg_settings            # noqa: E402
+from webui import history as history_store           # noqa: E402
 
 # Nap .env ngay khi khoi dong: /api/settings doc key qua os.environ,
 # khong nap truoc thi may da cau hinh roi van bao "chua co key".
@@ -84,6 +85,12 @@ def set_setting(req: KeyRequest):
     except ValueError as e:
         raise HTTPException(400, str(e))
     return {"ok": True, "keys": cfg_settings.read_all(ROOT), "engines": _engine_status()}
+
+
+@app.get("/api/history")
+def get_history():
+    """Danh sach video da xu ly xong, doc tu thu muc output/."""
+    return {"projects": history_store.list_projects(ROOT)}
 
 
 @app.get("/api/health")
@@ -155,11 +162,11 @@ async def job_events(job_id: str):
 
 
 def _safe_output(path_str: str) -> Path:
-    """Chi cho phep doc file nam trong workspace/ - tranh lo file khac tren may."""
+    """Chi cho phep doc file trong workspace/ va output/ - tranh lo file khac tren may."""
     p = Path(path_str).resolve()
-    ws = (ROOT / "workspace").resolve()
-    if ws not in p.parents:
-        raise HTTPException(403, "Duong dan ngoai workspace")
+    allowed = [(ROOT / "workspace").resolve(), (ROOT / "output").resolve()]
+    if not any(a in p.parents for a in allowed):
+        raise HTTPException(403, "Duong dan ngoai vung cho phep")
     if not p.exists():
         raise HTTPException(404, "File khong ton tai")
     return p

@@ -4,6 +4,7 @@ Cac buoc truoc rai file khap workspace/srt, workspace/tts, workspace/output.
 Buoc nay chep ban cuoi vao  output/<ten-video>/  de nguoi dung mo mot cho la
 thay du, va moi video mot thu muc rieng khong lan nhau.
 """
+import json
 import shutil
 from datetime import datetime
 from pathlib import Path
@@ -41,6 +42,7 @@ class Collector(BaseStep):
             copied[key] = dest
 
         self._write_info(base, video_id, info or {}, copied)
+        self._write_record(base, video_id, info or {}, copied)
         self.log(f"Da gom {len(copied)} file vao: {base}")
         return {"project_dir": base, "collected": copied}
 
@@ -65,3 +67,21 @@ class Collector(BaseStep):
             if key in copied:
                 lines.append(f"  - {nice}")
         (base / "thong-tin.txt").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+    def _write_record(self, base, video_id: str, info: dict, copied: dict):
+        """Ghi job.json de trang Lich su liet ke lai duoc sau khi tat may.
+
+        Thu muc output/ chinh la noi luu lich su - khong can co so du lieu.
+        """
+        record = {
+            "id": video_id,
+            "title": info.get("title") or video_id,
+            "finished_at": datetime.now().isoformat(timespec="seconds"),
+            "duration": info.get("duration"),
+            "cues": info.get("cues"),
+            "engines": info.get("engines"),
+            "source": info.get("original_path"),
+            "files": {k: str(v).replace(chr(92), "/") for k, v in copied.items()},
+        }
+        (base / "job.json").write_text(
+            json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")

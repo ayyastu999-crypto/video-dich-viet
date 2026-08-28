@@ -7,22 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Phudu:wght@400;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
 <style>
-:root{
-  --bg:#030304; --surface:#0f1115; --surface-2:#14171d;
-  --fg:#fff; --muted:#94a3b8; --border:#1e293b;
-  --primary:#f7931a; --accent:#ea580c; --gold:#ffd600;
-  --danger:#ef4444; --ok:#22c55e;
-  --radius:1rem;
-  --fire:linear-gradient(to right,#ea580c,#f7931a);
-  --goldgrad:linear-gradient(to right,#f7931a,#ffd600);
-  --glow-sm:0 0 20px -5px #ea580c80;
-  --glow-md:0 0 30px -5px #f7931a99;
-  --glow-card:0 0 30px -10px #f7931a33;
-  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
-  --display:"Phudu","Space Grotesk",system-ui,sans-serif;
-  --body:"Inter",system-ui,-apple-system,sans-serif;
-}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);
   -webkit-font-smoothing:antialiased;line-height:1.5;min-height:100vh}
@@ -269,6 +255,8 @@ select{cursor:pointer;appearance:none;
   <div class="status">
     <span class="pill mono"><span class="dot"></span> SẴN SÀNG</span>
     <span class="pill mono clock" id="clock">--:--</span>
+    <a class="pill mono" href="/lich-su.html" style="text-decoration:none;color:var(--muted)"
+       title="Xem các video đã dịch">🕘 LỊCH SỬ</a>
     <button class="gear" id="btn-gear" title="Cài đặt API key">⚙</button>
   </div>
 </div>

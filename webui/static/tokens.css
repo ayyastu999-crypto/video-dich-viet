@@ -1,0 +1,16 @@
+/* Bang mau va font dung chung cho moi trang cua app. */
+:root{
+  --bg:#030304; --surface:#0f1115; --surface-2:#14171d;
+  --fg:#fff; --muted:#94a3b8; --border:#1e293b;
+  --primary:#f7931a; --accent:#ea580c; --gold:#ffd600;
+  --danger:#ef4444; --ok:#22c55e;
+  --radius:1rem;
+  --fire:linear-gradient(to right,#ea580c,#f7931a);
+  --goldgrad:linear-gradient(to right,#f7931a,#ffd600);
+  --glow-sm:0 0 20px -5px #ea580c80;
+  --glow-md:0 0 30px -5px #f7931a99;
+  --glow-card:0 0 30px -10px #f7931a33;
+  --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --display:"Phudu","Space Grotesk",system-ui,sans-serif;
+  --body:"Inter",system-ui,-apple-system,sans-serif;
+}
