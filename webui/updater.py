@@ -41,7 +41,12 @@ def check(root: Path, timeout: int = 12) -> dict:
     """So phien ban dang cai voi ban tren GitHub."""
     cur = local_version(root)
     try:
-        with urllib.request.urlopen(RAW, timeout=timeout) as r:
+        # CDN cua raw.githubusercontent cache vai phut -> them tham so ngau nhien
+        # va header no-cache, khong thi vua day ban moi len van bao "da moi nhat".
+        url = RAW + "?t=" + datetime.now().strftime("%Y%m%d%H%M%S")
+        req = urllib.request.Request(url, headers={"Cache-Control": "no-cache",
+                                                   "Pragma": "no-cache"})
+        with urllib.request.urlopen(req, timeout=timeout) as r:
             remote = json.loads(r.read().decode("utf-8"))
     except Exception as e:
         return {"ok": False, "error": f"Khong ket noi duoc GitHub: {e}",
