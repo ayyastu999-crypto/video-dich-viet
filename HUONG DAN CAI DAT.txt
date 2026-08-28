@@ -5,6 +5,19 @@
 ================================================================
 
 
+CACH NHANH NHAT: CAI BANG 1 LENH
+--------------------------------
+
+Mo PowerShell (bam Windows, go "powershell", Enter) roi dan dong nay:
+
+  irm https://raw.githubusercontent.com/ayyastu999-crypto/video-dich-viet/main/install.ps1 | iex
+
+No se tai ma nguon ve, giai nen, va hoi co chay trinh cai thu vien luon khong.
+Van can cai san Python va FFmpeg o muc duoi truoc.
+
+Hoac tai thu cong tai: https://github.com/ayyastu999-crypto/video-dich-viet
+
+
 CAN CHUAN BI TRUOC
 ------------------
 
