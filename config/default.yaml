@@ -90,5 +90,5 @@ upload:
 # Bat/tat cac buoc nang. Voi video local khong co phu de chay san va
 # khong can giu nhac nen, tat ca hai de chay nhanh va bot phu thuoc.
 pipeline:
-  separate_audio: false     # Demucs tach nhac nen (can torch, nang)
-  blur_old_captions: false  # PaddleOCR do + blur phu de cu (can opencv)
+  separate_audio: true     # Demucs tach nhac nen (can torch, nang)
+  blur_old_captions: true  # PaddleOCR do + blur phu de cu (can opencv)

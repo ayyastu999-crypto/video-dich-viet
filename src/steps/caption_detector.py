@@ -162,11 +162,18 @@ class CaptionDetector(BaseStep):
             if score >= 6:
                 candidates.append(d)
 
-        if not candidates:
-            # Fallback: just take detections in bottom 40%
-            candidates = [d for d in detections if d["y_center"] / height > 0.6]
+        # Chan cung theo chieu doc: phu de nam o phan duoi khung hinh.
+        # Khong co buoc nay thi logo/ten kenh o mep tren van lot vao vong sau.
+        min_y = float(self.config["caption"].get("min_y_ratio", 0.6))
+        in_band = [d for d in candidates if d["y_center"] / height >= min_y]
+        if in_band:
+            candidates = in_band
+        else:
+            # Khong con gi o phan duoi -> ha nguong diem thay vi lay bua o tren
+            candidates = [d for d in detections if d["y_center"] / height >= min_y]
 
         if not candidates:
+            self.log(f"  Khong thay phu de nao o duoi {min_y:.0%} khung hinh")
             return []
 
         # Cluster by Y position: find the most common Y band
@@ -176,8 +183,14 @@ class CaptionDetector(BaseStep):
             band = round(d["y_center"] / height, 1)  # Round to 10% bands
             y_bands.append(band)
 
-        band_counts = Counter(y_bands)
-        best_band = band_counts.most_common(1)[0][0]
+        # Chon vung theo TONG DIEM, khong theo so lan xuat hien.
+        # Watermark dung yen mot cho nen dem so lan thi no luon thang phu de that
+        # (phu de doi vi tri va khong phai khung nao cung co).
+        band_score = {}
+        for d in candidates:
+            band = round(d["y_center"] / height, 1)
+            band_score[band] = band_score.get(band, 0) + d.get("_score", 1)
+        best_band = max(band_score, key=band_score.get)
 
         # Keep only detections in the best Y band (±10%)
         filtered = [
