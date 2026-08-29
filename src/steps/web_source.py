@@ -28,7 +28,9 @@ class WebSource(BaseStep):
 
         if plat == "douyin":
             try:
-                return self._qua_playwright(url, out_dir)
+                # Phai dua URL DA NAN: Downloader cu chi hieu dang /video/<id>,
+                # dua dang feed vao no bóc id ra None roi vo.
+                return self._qua_playwright(real_url, out_dir)
             except Exception as e:
                 self.log(f"Playwright hong ({type(e).__name__}), chuyen sang yt-dlp...")
 
@@ -49,23 +51,29 @@ class WebSource(BaseStep):
     def _qua_ytdlp(self, url: str, out_dir: Path, plat: str) -> dict:
         import yt_dlp
 
-        cookies = self._tim_cookie()
-        lan_thu = [False, True] if cookies else [False]
+        # Thu lan luot: khong cookie -> file cookie -> cookie song trong trinh duyet.
+        # Cookie doc thang tu trinh duyet luon moi, khong phai chay script lay tay.
+        cach = [("khong", None)]
+        f = self._tim_cookie()
+        if f:
+            cach.append(("file cookie", {"cookiefile": str(f)}))
+        for tb in self._trinh_duyet():
+            cach.append((f"cookie tu {tb}", {"cookiesfrombrowser": (tb, None, None, None)}))
 
         loi_cuoi = None
-        for dung_cookie in lan_thu:
-            if dung_cookie:
-                self.log("Thu lai kem cookie...")
+        for ten, opt in cach:
+            if opt:
+                self.log(f"Thu lai voi {ten}...")
             try:
-                return self._tai(yt_dlp, url, out_dir, cookies if dung_cookie else None)
+                return self._tai(yt_dlp, url, out_dir, opt)
             except Exception as e:
                 loi_cuoi = e
-                if not self._co_the_do_cookie(e) or dung_cookie:
+                if not self._co_the_do_cookie(e):
                     break
 
-        raise RuntimeError(self._giai_thich(loi_cuoi, plat, bool(cookies)))
+        raise RuntimeError(self._giai_thich(loi_cuoi, plat, len(cach) > 1))
 
-    def _tai(self, yt_dlp, url: str, out_dir: Path, cookies: Path | None) -> dict:
+    def _tai(self, yt_dlp, url: str, out_dir: Path, them: dict | None) -> dict:
         opts = {
             "outtmpl": str(out_dir / "%(id)s.%(ext)s"),
             "format": "bv*+ba/best",
@@ -74,8 +82,8 @@ class WebSource(BaseStep):
             "no_warnings": True,
             "noprogress": True,
         }
-        if cookies:
-            opts["cookiefile"] = str(cookies)
+        if them:
+            opts.update(them)
 
         with yt_dlp.YoutubeDL(opts) as ydl:
             info = ydl.extract_info(url, download=True)
@@ -90,7 +98,8 @@ class WebSource(BaseStep):
 
         video_id = slugify(info.get("id") or path.stem)
         size_mb = path.stat().st_size / 1024 / 1024
-        duration = float(info.get("duration") or 0)
+        # Vai trang (vd Instagram Reels) khong tra thoi luong -> tu do tu file
+        duration = float(info.get("duration") or 0) or self._do_thoi_luong(path)
         self.log(f"Da tai: {path.name} ({size_mb:.1f} MB, {duration:.0f}s)")
 
         return {
@@ -114,6 +123,33 @@ class WebSource(BaseStep):
         p = Path(name)
         return p if p.exists() and p.stat().st_size > 0 else None
 
+    def _trinh_duyet(self) -> list:
+        """Cac trinh duyet co tren may, de yt-dlp doc cookie truc tiep.
+
+        Cach nay luon lay duoc cookie moi nhat, khong phai chay script xuat file
+        roi vai thang sau lai het han.
+        """
+        import os
+        import sys
+
+        if sys.platform == "win32":
+            la = os.environ.get("LOCALAPPDATA", "")
+            ro = os.environ.get("APPDATA", "")
+            co = [("chrome", la + r"/Google/Chrome/User Data"),
+                  ("edge",   la + r"/Microsoft/Edge/User Data"),
+                  ("firefox", ro + r"/Mozilla/Firefox")]
+        elif sys.platform == "darwin":
+            h = os.path.expanduser("~/Library/Application Support")
+            co = [("chrome", h + "/Google/Chrome"),
+                  ("edge",   h + "/Microsoft Edge"),
+                  ("firefox", h + "/Firefox")]
+        else:
+            h = os.path.expanduser("~")
+            co = [("chrome", h + "/.config/google-chrome"),
+                  ("firefox", h + "/.mozilla/firefox")]
+
+        return [ten for ten, duong in co if duong and Path(duong).exists()]
+
     @staticmethod
     def _co_the_do_cookie(err) -> bool:
         s = str(err).lower()
@@ -128,9 +164,9 @@ class WebSource(BaseStep):
             if co_cookie:
                 return (f"{plat}: cookie hien tai khong dung duoc (co the da het han). "
                         f"Hay nap lai cookie moi tu trinh duyet. Chi tiet: {s[:160]}")
-            return (f"{plat}: trang nay doi cookie moi tai duoc. "
-                    f"Chay 'python scripts/setup_cookies.py' de lay cookie tu trinh duyet. "
-                    f"Chi tiet: {s[:160]}")
+            return (f"{plat}: trang nay doi cookie moi tai duoc, va cookie tren may "
+                    f"deu khong dung duoc. Hay mo trang do bang trinh duyet mot lan "
+                    f"(dang nhap neu can) roi thu lai. Chi tiet: {s[:150]}")
         if "unsupported url" in s.lower():
             return (f"Khong nhan ra dang link nay. Hay mo video roi copy link tren "
                     f"thanh dia chi, dung copy tu nut chia se. Chi tiet: {s[:160]}")

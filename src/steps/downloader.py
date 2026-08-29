@@ -28,9 +28,13 @@ class Downloader(BaseStep):
             }
 
         # Playwright first (yt-dlp Douyin extractor often broken)
+        # Python xoa ten bien cua "except ... as e" khi thoat khoi khoi except,
+        # nen phai giu loi ra bien khac de con dung o duoi.
+        pw_error = "khong ro"
         try:
             return self._download_playwright(video_id, output_dir)
-        except Exception as pw_error:
+        except Exception as e:
+            pw_error = f"{type(e).__name__}: {e}"
             self.log(f"Playwright failed: {pw_error}, trying yt-dlp...")
 
         # Fallback to yt-dlp
@@ -97,8 +101,16 @@ class Downloader(BaseStep):
                 )
             )
             page = ctx.new_page()
-            page.goto(url, timeout=30000)
-            time.sleep(5)
+            # "load" cho toan bo tai nguyen tai xong - Douyin la SPA nang nen
+            # su kien do co the khong bao gio xay ra. "domcontentloaded" du dung,
+            # vi ngay sau day ta doi the <video> xuat hien.
+            cho = int(self.config["download"].get("timeout", 60)) * 1000
+            page.goto(url, wait_until="domcontentloaded", timeout=cho)
+            try:
+                page.wait_for_selector("video", timeout=cho)
+            except Exception:
+                pass          # khong thay the video thi van thu boc tu HTML ben duoi
+            time.sleep(3)
 
             # Find video source URL
             video_url = None
