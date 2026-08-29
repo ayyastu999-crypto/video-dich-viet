@@ -22,6 +22,9 @@ class RevidAPI:
     """RevidAPI client wrapper."""
 
     BASE_URL = "https://api.revidapi.com/paid"
+    # Cloudflare cua RevidAPI chan client khong co UA kieu trinh duyet
+    UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+          "(KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36")
 
     def __init__(self, api_key: str):
         self.api_key = api_key
@@ -68,30 +71,42 @@ class RevidAPI:
                  timeout: int = 120) -> dict:
         """Nho RevidAPI tai ho video.
 
-        Dung khi cac cach mien phi deu bi chan (dien hinh la Douyin). Ton 5 credit
-        mot lan goi, doi lai khong phai danh nhau voi he thong chong bot.
+        Dung khi cac cach mien phi bi chan (dien hinh la Douyin). Ton 5 credit
+        moi lan goi, doi lai khong phai danh nhau voi he thong chong bot.
 
-        Tra ve: {"url": link tai truc tiep, "title", "duration", "uploader"}
+        Luu y ve API nay (do goi that ra, khac voi tai lieu):
+          - Tham so `url` di o QUERY STRING, khong phai trong body JSON
+          - Tra ve MOT MANG, khong phai {code, response}
+          - Link tai thang nam o `video_url`
+          - Thieu User-Agent kieu trinh duyet se bi Cloudflare chan 403 (ma 1010)
         """
         social = self.SOCIAL.get(platform)
         if not social:
             raise ValueError(f"RevidAPI khong ho tro nen tang: {platform}")
 
-        res = self._post(f"{social}/download",
-                         {"url": url, "quality": quality}, timeout=timeout)
-        data = res.get("response") or {}
+        resp = requests.post(
+            f"{self.BASE_URL}/{social}/download",
+            params={"url": url},
+            headers={**self.headers, "User-Agent": self.UA},
+            timeout=timeout,
+        )
+        resp.raise_for_status()
+        data = resp.json()
 
-        # download_direct la link tai thang, video_url la du phong
-        link = data.get("download_direct") or data.get("video_url") or data.get("url")
+        item = data[0] if isinstance(data, list) and data else data
+        if not isinstance(item, dict):
+            raise RuntimeError(f"RevidAPI tra ve du lieu la: {str(data)[:200]}")
+
+        link = item.get("video_url") or item.get("download_direct")
         if not link:
-            raise RuntimeError(f"RevidAPI khong tra ve link tai: {res}")
+            raise RuntimeError(f"RevidAPI khong tra ve link tai: {str(item)[:200]}")
 
         return {
             "url": link,
-            "title": data.get("title") or "",
-            "duration": data.get("duration") or 0,
-            "uploader": data.get("uploader") or "",
-            "filesize": data.get("filesize") or 0,
+            "title": item.get("title") or "",
+            "duration": item.get("duration") or 0,
+            "uploader": item.get("uploader") or "",
+            "thumbnail": item.get("thumbnail") or "",
         }
 
     # ─── Caption Detection ──────────────────────────────────────────────
