@@ -1,5 +1,5 @@
 {
-  "version": "1.5.2",
+  "version": "1.5.3",
   "date": "2026-08-29",
-  "notes": "Sua loi trinh duyet giu JavaScript cu trong cache sau khi cap nhat app"
+  "notes": "Bo chot chan video dai 5 phut khi dan link - nguoi dung tu chon thi khong chan"
 }

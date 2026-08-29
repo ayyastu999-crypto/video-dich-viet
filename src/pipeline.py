@@ -70,12 +70,10 @@ class Pipeline:
             duration = float(r.stdout.strip() or 0)
             if duration > 300:
                 self._log(f"⚠ Video dài {duration:.0f}s (>5 phút) - xử lý chậm!")
-            # Gioi han do dai chi ap cho video tai ve (tranh tai nham video dai).
-            # File local do nguoi dung tu chon nen khong chan.
-            if not local_video:
-                max_dur = self.config.get("download", {}).get("max_duration_sec", 0)
-                if max_dur > 0 and duration > max_dur:
-                    raise RuntimeError(f"Video quá dài ({duration:.0f}s > {max_dur}s)")
+            # KHONG chan theo do dai o day nua. Ham run() luon xu ly mot video
+            # do nguoi dung tu chon - keo file vao hoac dan link - nen chan lai
+            # la can tro chinh y dinh cua ho. Chi canh bao la du.
+            # Muon gioi han thi dat o cho quet ca kenh (run_batch/channel).
         except (ValueError, subprocess.TimeoutExpired):
             pass
 
