@@ -92,15 +92,27 @@ class Downloader(BaseStep):
         video_path = output_dir / f"{video_id}.mp4"
 
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            ctx = browser.new_context(
-                user_agent=(
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                    "AppleWebKit/537.36 (KHTML, like Gecko) "
-                    "Chrome/130.0.0.0 Safari/537.36"
+            ua = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                  "AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/130.0.0.0 Safari/537.36")
+
+            # Co ho so da dang nhap thi dung lai -> trang thay mot nguoi dung
+            # binh thuong da co phien, thay vi trinh duyet vua mo len trang tron.
+            ho_so = Path("workspace") / "ho-so-trinh-duyet"
+            browser = None
+            if ho_so.exists():
+                self.log("Dung phien da dang nhap truoc do")
+                ctx = p.chromium.launch_persistent_context(
+                    user_data_dir=str(ho_so.resolve()),
+                    headless=True,
+                    user_agent=ua,
+                    args=["--disable-blink-features=AutomationControlled"],
                 )
-            )
-            page = ctx.new_page()
+                page = ctx.pages[0] if ctx.pages else ctx.new_page()
+            else:
+                browser = p.chromium.launch(headless=True)
+                ctx = browser.new_context(user_agent=ua)
+                page = ctx.new_page()
             # "load" cho toan bo tai nguyen tai xong - Douyin la SPA nang nen
             # su kien do co the khong bao gio xay ra. "domcontentloaded" du dung,
             # vi ngay sau day ta doi the <video> xuat hien.
@@ -130,7 +142,7 @@ class Downloader(BaseStep):
                     video_url = matches[0]
 
             if not video_url:
-                browser.close()
+                (browser or ctx).close()
                 raise RuntimeError("No video URL found on page")
 
             resp = page.request.get(video_url)
@@ -143,7 +155,7 @@ class Downloader(BaseStep):
             if title_el:
                 title = title_el.inner_text()
 
-            browser.close()
+            (browser or ctx).close()
 
         size_mb = video_path.stat().st_size / 1024 / 1024
         self.log(f"Downloaded via Playwright: {video_path.name} ({size_mb:.1f} MB)")
