@@ -215,7 +215,7 @@ $('#go').onclick = async () => {
 
 function paintKeys(keys){
   let anySet = false;
-  ['gemini', 'deepseek'].forEach(name => {
+  ['gemini', 'deepseek', 'revid'].forEach(name => {
     const k = (keys || {})[name] || {};
     const st = $('#st-' + name);
     const inp = $('#key-' + name);

@@ -21,6 +21,11 @@ def resolve_secrets(cfg: dict) -> dict:
 
     Uu tien bien moi truong -> khong bao gio phai ghi key vao source.
     """
+    rv = cfg.get("revid", {})
+    if not rv.get("api_key"):
+        rv["api_key"] = os.getenv("REVIDAPI_KEY", "")
+        cfg["revid"] = rv
+
     tr = cfg.get("translation", {})
     if not tr.get("api_key"):
         provider = tr.get("provider", "gemini")

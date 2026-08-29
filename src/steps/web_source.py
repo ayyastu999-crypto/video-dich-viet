@@ -6,12 +6,17 @@ Thu tu thu (phuong an C):
   Douyin  -> Playwright truoc (khong can cookie), hong thi yt-dlp + cookie
   Con lai -> yt-dlp thang, hong vi bi chan thi thu lai kem cookie
 """
+import os
 import subprocess
 from pathlib import Path
 
 from src.steps.base import BaseStep
 from src.steps.local_source import slugify
 from src.utils.video_url import describe, platform_of
+
+
+class _KhongCoRevid(Exception):
+    """Chua cau hinh RevidAPI hoac nen tang khong duoc ho tro."""
 
 
 class WebSource(BaseStep):
@@ -71,7 +76,59 @@ class WebSource(BaseStep):
                 if not self._co_the_do_cookie(e):
                     break
 
+        # Cac cach mien phi deu tac -> nho RevidAPI tai ho (ton 5 credit).
+        # Day la duong cuoi vi no mat tien, nhung khong phu thuoc he thong
+        # chong bot cua trang nen on dinh hon han.
+        try:
+            return self._qua_revid(url, out_dir, plat)
+        except _KhongCoRevid:
+            pass
+        except Exception as e:
+            self.log(f"RevidAPI cung khong duoc: {str(e)[:120]}")
+
         raise RuntimeError(self._giai_thich(loi_cuoi, plat, len(cach) > 1))
+
+    def _qua_revid(self, url: str, out_dir: Path, plat: str) -> dict:
+        """Duong cuoi: tra tien cho RevidAPI tai ho."""
+        import requests
+
+        from src.steps.revid_api import RevidAPI
+
+        key = (self.config.get("revid", {}).get("api_key")
+               or os.getenv("REVIDAPI_KEY", ""))
+        if not key:
+            raise _KhongCoRevid()
+        if plat not in RevidAPI.SOCIAL:
+            raise _KhongCoRevid()
+
+        self.log("Thu qua RevidAPI (ton 5 credit)...")
+        info = RevidAPI(key).download(url, plat)
+
+        video_id = slugify(info.get("title") or plat)
+        dest = out_dir / f"{video_id}.mp4"
+        with requests.get(info["url"], stream=True, timeout=180) as r:
+            r.raise_for_status()
+            with open(dest, "wb") as f:
+                for chunk in r.iter_content(1 << 20):
+                    f.write(chunk)
+
+        duration = float(info.get("duration") or 0) or self._do_thoi_luong(dest)
+        size_mb = dest.stat().st_size / 1024 / 1024
+        self.log(f"RevidAPI da tai: {dest.name} ({size_mb:.1f} MB, {duration:.0f}s)")
+
+        return {
+            "video_path": dest,
+            "video_id": video_id,
+            "duration": duration,
+            "metadata": {
+                "id": video_id,
+                "title": info.get("title") or video_id,
+                "description": "",
+                "source": "revidapi/" + plat,
+                "original_path": url,
+                "uploader": info.get("uploader") or "",
+            },
+        }
 
     def _tai(self, yt_dlp, url: str, out_dir: Path, them: dict | None) -> dict:
         opts = {

@@ -53,6 +53,47 @@ class RevidAPI:
             elapsed += poll_interval
         raise TimeoutError(f"Task {task_id} timed out after {max_wait}s")
 
+    # ─── Tai video tu link ──────────────────────────────────────────────
+
+    # nen tang cua ta -> doan {social} trong duong dan cua RevidAPI
+    SOCIAL = {
+        "douyin": "douyin",
+        "tiktok": "tiktok",
+        "facebook": "meta",
+        "instagram": "meta",
+        "youtube": "youtube",
+    }
+
+    def download(self, url: str, platform: str, quality: str = "1080p",
+                 timeout: int = 120) -> dict:
+        """Nho RevidAPI tai ho video.
+
+        Dung khi cac cach mien phi deu bi chan (dien hinh la Douyin). Ton 5 credit
+        mot lan goi, doi lai khong phai danh nhau voi he thong chong bot.
+
+        Tra ve: {"url": link tai truc tiep, "title", "duration", "uploader"}
+        """
+        social = self.SOCIAL.get(platform)
+        if not social:
+            raise ValueError(f"RevidAPI khong ho tro nen tang: {platform}")
+
+        res = self._post(f"{social}/download",
+                         {"url": url, "quality": quality}, timeout=timeout)
+        data = res.get("response") or {}
+
+        # download_direct la link tai thang, video_url la du phong
+        link = data.get("download_direct") or data.get("video_url") or data.get("url")
+        if not link:
+            raise RuntimeError(f"RevidAPI khong tra ve link tai: {res}")
+
+        return {
+            "url": link,
+            "title": data.get("title") or "",
+            "duration": data.get("duration") or 0,
+            "uploader": data.get("uploader") or "",
+            "filesize": data.get("filesize") or 0,
+        }
+
     # ─── Caption Detection ──────────────────────────────────────────────
 
     def detect_caption(self, video_url: str, language: str = "auto",

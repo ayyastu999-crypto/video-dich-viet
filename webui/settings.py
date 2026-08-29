@@ -13,6 +13,7 @@ KEYS = {
     "gemini": "GEMINI_API_KEY",
     "deepseek": "DEEPSEEK_API_KEY",
     "openai": "OPENAI_API_KEY",
+    "revid": "REVIDAPI_KEY",
 }
 
 
