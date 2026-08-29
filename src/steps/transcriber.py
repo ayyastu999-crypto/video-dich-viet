@@ -12,12 +12,15 @@ class Transcriber(BaseStep):
 
     def _get_model(self):
         from src.utils.model_cache import model_cache
+        from src.utils.device import pick_device, pick_compute_type, describe
+
         stt_cfg = self.config["stt"]
-        return model_cache.get_whisper(
-            stt_cfg["model"],
-            stt_cfg.get("device", "cpu"),
-            stt_cfg.get("compute_type", "float16"),
-        )
+        # Tu do phan cung thay vi tin cau hinh: config dat cuda/float16 ma may
+        # khong co NVIDIA thi vo ngay o buoc nay.
+        device = pick_device(stt_cfg.get("device", "auto"))
+        compute = pick_compute_type(device, stt_cfg.get("compute_type", "auto"))
+        self.log(f"May: {describe()} -> chay {device}/{compute}")
+        return model_cache.get_whisper(stt_cfg["model"], device, compute)
 
     def run(self, video_path: Path) -> dict:
         model = self._get_model()

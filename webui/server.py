@@ -206,7 +206,13 @@ def get_file(path: str, inline: int = 0):
 def reveal(path: str):
     """Mo thu muc chua file trong Explorer."""
     p = _safe_output(path)
-    subprocess.Popen(["explorer", "/select,", str(p)])
+    # Moi he dieu hanh mot lenh khac nhau
+    if sys.platform == "win32":
+        subprocess.Popen(["explorer", "/select,", str(p)])
+    elif sys.platform == "darwin":
+        subprocess.Popen(["open", "-R", str(p)])          # macOS: Finder
+    else:
+        subprocess.Popen(["xdg-open", str(p.parent)])     # Linux
     return {"ok": True}
 
 

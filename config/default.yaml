@@ -45,8 +45,9 @@ scheduler:
   enabled: false
   url_file: workspace/urls.txt
 stt:
-  compute_type: float16
-  device: cuda
+  # auto = tu do phan cung. Mac khong co CUDA se tu chay cpu/int8.
+  compute_type: auto
+  device: auto
   language: zh
   model: large-v3
   vad_filter: true

@@ -17,7 +17,9 @@ class CaptionDetector(BaseStep):
         from src.utils.model_cache import model_cache
         import cv2
 
-        reader = model_cache.get_easyocr(["ch_sim", "en"], gpu=True)
+        from src.utils.device import has_cuda
+        # easyocr chi tang toc duoc bang CUDA; Mac phai chay CPU
+        reader = model_cache.get_easyocr(["ch_sim", "en"], gpu=has_cuda())
         cap = cv2.VideoCapture(str(video_path))
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = cap.get(cv2.CAP_PROP_FPS) or 25
