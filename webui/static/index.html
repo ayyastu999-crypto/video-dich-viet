@@ -354,10 +354,16 @@ select{cursor:pointer;appearance:none;
   </div>
   <input type="file" id="file" accept="video/*" hidden>
 
-  <div class="or mono">HOẶC DÁN ĐƯỜNG DẪN</div>
+  <div class="or mono">HOẶC DÁN LINK VIDEO / ĐƯỜNG DẪN FILE</div>
   <div class="path-row">
-    <input type="text" id="path" placeholder="C:\Users\PC\Desktop\video.mp4">
+    <input type="text" id="path"
+           placeholder="Dán link RedNote, Douyin, TikTok, Facebook... hoặc đường dẫn file">
     <button class="btn-ghost" id="btn-path">Nạp</button>
+  </div>
+
+  <div class="hint" style="margin-top:9px">
+    Dán link là app tự tải video về rồi dịch luôn.
+    Douyin, Facebook, Instagram có thể cần cookie nếu bị chặn.
   </div>
 
   <div class="file-info" id="finfo" style="margin-top:14px">
@@ -541,7 +547,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 // Bao nhieu giay video dang chon (dung de uoc tinh chi phi)
-let state = { seconds: 0, name: "", loaded: false, running: false, file: null, path: null };
+let state = { seconds: 0, name: "", loaded: false, running: false, file: null, path: null, url: null };
 
 // ---- dong ho goc phai ----
 const tick = () => {
@@ -580,7 +586,7 @@ function loadFile(f){
 }
 
 function setFile(name, seconds, size, res){
-  state = { seconds, name, loaded: true, running: false, file: null, path: null };
+  state = { seconds, name, loaded: true, running: false, file: null, path: null, url: null };
   $("#fname").textContent = name;
   $("#fsub").textContent = [seconds ? fmtDur(seconds) : null, res, size].filter(Boolean).join(" · ");
   $("#finfo").classList.add("show");
@@ -591,13 +597,21 @@ function setFile(name, seconds, size, res){
 }
 
 $("#btn-path").onclick = () => {
-  const p = $("#path").value.trim();
-  if (!p) return;
-  setFile(p.split("/").pop().split(BS).pop(), 0, "—", "");
-  state.path = p;                // duong dan co san tren may, khoi upload
+  const v = $("#path").value.trim();
+  if (!v) return;
+  if (/^https?:/i.test(v)) {
+    // Link web: chua co file tren may nen chua doc duoc thoi luong
+    const host = (v.split("/")[2] || "link").replace(/^www\./, "");
+    setFile(host, 0, "", "");
+    state.url = v;
+    $("#fsub").textContent = "Link web · app sẽ tự tải video về";
+  } else {
+    setFile(v.split("/").pop().split(BS).pop(), 0, "—", "");
+    state.path = v;
+  }
 };
 $("#btn-clear").onclick = () => {
-  state = { seconds:0, name:"", loaded:false, running:false, file:null, path:null };
+  state = { seconds:0, name:"", loaded:false, running:false, file:null, path:null, url:null };
   $("#finfo").classList.remove("show");
   $("#src-tag").textContent = "CHƯA CÓ FILE";
   $("#src-tag").className = "tag";

@@ -154,7 +154,9 @@ $('#go').onclick = async () => {
     // 1) Lay duong dan tren may chu. File keo-tha phai upload truoc vi
     //    trinh duyet khong tiet lo duong dan that.
     let path = state.path;
-    if (!path && state.file) {
+    if (state.url) {
+      logLine('Nguồn: ' + state.url.slice(0, 72));
+    } else if (!path && state.file) {
       logLine('Đang tải video lên máy chủ...');
       const fd = new FormData();
       fd.append('file', state.file);
@@ -164,13 +166,14 @@ $('#go').onclick = async () => {
       path = j.path;
       logLine('Đã nhận ' + j.name + ' (' + fmtSize(j.size) + ')', 'ok');
     }
-    if (!path) return failRun('Chưa chọn video');
+    if (!path && !state.url) return failRun('Chưa chọn video hoặc dán link');
 
     // 2) Tao job
     const outs = outputs();
     const wantVoice = $('#voice').value !== 'none';
     const body = {
-      path: path,
+      path: path || '',
+      url: state.url || '',
       lang: 'vi',
       src_lang: $('#src-lang').value,
       voice: wantVoice ? $('#voice').value : null,

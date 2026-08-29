@@ -5,6 +5,9 @@
 # Nhan dang giong noi - dung CTranslate2, khong phu thuoc torch
 faster-whisper>=1.1.0
 
+# Tai video tu link (RedNote, Douyin, Facebook, Instagram, TikTok...)
+yt-dlp>=2026.8.0
+
 # Dich
 google-genai>=1.0.0
 openai>=1.60.0          # dung cho DeepSeek (chung giao thuc OpenAI)

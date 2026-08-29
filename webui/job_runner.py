@@ -102,7 +102,10 @@ def _work(job: Job, opts: dict):
                 pipe.config.setdefault("pipeline", {})[key] = bool(opts[key])
 
         with redirect_stdout(pump):
-            result = pipe.run(local_video=job.video, target_lang=job.lang)
+            if opts.get("url"):
+                result = pipe.run(url=opts["url"], target_lang=job.lang)
+            else:
+                result = pipe.run(local_video=job.video, target_lang=job.lang)
 
         job.result = {k: str(v) for k, v in result.items()}
         job.status = "done"
@@ -118,9 +121,11 @@ def _work(job: Job, opts: dict):
 
 def start_job(video: str, lang: str = "vi", opts: dict = None) -> Job:
     """Tao job moi va chay nen. Tra ve ngay de web tra job_id cho trinh duyet."""
-    if not Path(video).exists():
+    opts = opts or {}
+    # Nguon la link thi chua co file, khong kiem tra ton tai
+    if not opts.get("url") and not Path(video).exists():
         raise FileNotFoundError(f"Khong tim thay file: {video}")
     job = Job(id=uuid.uuid4().hex[:12], video=video, lang=lang)
     JOBS[job.id] = job
-    threading.Thread(target=_work, args=(job, opts or {}), daemon=True).start()
+    threading.Thread(target=_work, args=(job, opts), daemon=True).start()
     return job

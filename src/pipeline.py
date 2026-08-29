@@ -10,6 +10,7 @@ from datetime import datetime
 from src.config import load_config
 from src.steps.downloader import Downloader
 from src.steps.local_source import LocalSource
+from src.steps.web_source import WebSource
 from src.steps.transcriber import Transcriber
 from src.steps.translator import Translator
 from src.steps.tts import TTSGenerator
@@ -51,7 +52,9 @@ class Pipeline:
         if local_video:
             dl_result = LocalSource(self.config, self.work_dir).run(path=local_video)
         else:
-            dl_result = Downloader(self.config, self.work_dir).run(url=url)
+            # WebSource nan link roi tu chon duong tai theo tung nen tang
+            # (Douyin di Playwright, con lai di yt-dlp)
+            dl_result = WebSource(self.config, self.work_dir).run(url=url)
         video_path = dl_result["video_path"]
         metadata = dl_result.get("metadata", {})
         self._log(f"Video san sang: {video_path}")

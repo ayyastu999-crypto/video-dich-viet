@@ -33,7 +33,8 @@ STATIC = Path(__file__).parent / "static"
 
 
 class JobRequest(BaseModel):
-    path: str
+    path: str = ""          # duong dan file tren may
+    url: str = ""           # hoac link video tren web
     lang: str = "vi"
     voice: str | None = None
     src_lang: str = "auto"
@@ -138,6 +139,8 @@ async def upload(file: UploadFile = File(...)):
 
 @app.post("/api/jobs")
 def create_job(req: JobRequest):
+    if not req.path and not req.url:
+        raise HTTPException(400, "Can chon file hoac dan link video")
     try:
         job = start_job(req.path, req.lang, req.model_dump())
     except FileNotFoundError as e:
