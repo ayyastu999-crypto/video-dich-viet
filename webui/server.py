@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -217,6 +217,29 @@ def reveal(path: str):
     else:
         subprocess.Popen(["xdg-open", str(p.parent)])     # Linux
     return {"ok": True}
+
+
+def _trang(ten: str) -> HTMLResponse:
+    """Tra ve trang HTML co gan so phien ban vao duong dan js/css.
+
+    Khong lam viec nay thi sau moi lan cap nhat app, trinh duyet van chay
+    JavaScript cu trong cache - nguoi dung tuong app hong.
+    """
+    html = (STATIC / ten).read_text(encoding="utf-8")
+    v = updater.local_version(ROOT).get("version", "0")
+    for asset in ("_run.js", "lich-su.js", "tokens.css"):
+        html = html.replace(f'"{asset}"', f'"{asset}?v={v}"')
+    return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
+
+@app.get("/", response_class=HTMLResponse)
+def trang_chinh():
+    return _trang("index.html")
+
+
+@app.get("/lich-su.html", response_class=HTMLResponse)
+def trang_lich_su():
+    return _trang("lich-su.html")
 
 
 app.mount("/", StaticFiles(directory=str(STATIC), html=True), name="static")

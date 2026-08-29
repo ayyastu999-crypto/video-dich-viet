@@ -1,5 +1,5 @@
 {
-  "version": "1.5.1",
+  "version": "1.5.2",
   "date": "2026-08-29",
-  "notes": "Douyin dan link tai duoc qua RevidAPI - da kiem chung tren link that"
+  "notes": "Sua loi trinh duyet giu JavaScript cu trong cache sau khi cap nhat app"
 }
